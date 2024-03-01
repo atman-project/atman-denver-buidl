@@ -2215,6 +2215,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ironcorelabs/recrypt-wasm-binding@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@ironcorelabs/recrypt-wasm-binding@npm:0.6.0"
+  checksum: 10c0/b71798d77097165afff414f7bccfc70c27f586b9d2302478a31c4d64b36e10cc4be504733723b4e1108c7ed5c9b527fdfd955dd180b03b6df3e5e50998629e98
+  languageName: node
+  linkType: hard
+
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -4443,6 +4450,13 @@ __metadata:
     "@types/filesystem": "npm:*"
     "@types/har-format": "npm:*"
   checksum: 10c0/55e404ad4a448a747b1ecda0df9a74cffea9059331abf3dcb40d8c347e9bb6806f7b33e8f98289bcca3f4201f41ed88ec40dfb22c0ccad4cc53a25e5c7f4b691
+  languageName: node
+  linkType: hard
+
+"@types/crypto-js@npm:^4":
+  version: 4.2.2
+  resolution: "@types/crypto-js@npm:4.2.2"
+  checksum: 10c0/760a2078f36f2a3a1089ef367b0d13229876adcf4bcd6e8824d00d9e9bfad8118dc7e6a3cc66322b083535e12be3a29044ccdc9603bfb12519ff61551a3322c6
   languageName: node
   linkType: hard
 
@@ -6893,6 +6907,13 @@ __metadata:
   version: 0.0.2
   resolution: "crypt@npm:0.0.2"
   checksum: 10c0/adbf263441dd801665d5425f044647533f39f4612544071b1471962209d235042fb703c27eea2795c7c53e1dfc242405173003f83cf4f4761a633d11f9653f18
+  languageName: node
+  linkType: hard
+
+"crypto-js@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "crypto-js@npm:4.2.0"
+  checksum: 10c0/8fbdf9d56f47aea0794ab87b0eb9833baf80b01a7c5c1b0edc7faf25f662fb69ab18dc2199e2afcac54670ff0cd9607a9045a3f7a80336cccd18d77a55b9fdf0
   languageName: node
   linkType: hard
 
@@ -10156,6 +10177,7 @@ __metadata:
     "@babel/preset-typescript": "npm:^7.23.3"
     "@coinbase/onchainkit": "npm:0.9.5"
     "@coinbase/wallet-sdk": "npm:^3.9.1"
+    "@ironcorelabs/recrypt-wasm-binding": "npm:^0.6.0"
     "@jest/globals": "npm:^29.7.0"
     "@privy-io/react-auth": "npm:^1.56.2"
     "@radix-ui/react-dropdown-menu": "npm:^2.0.6"
@@ -10168,6 +10190,7 @@ __metadata:
     "@testing-library/react": "npm:^14.1.2"
     "@testing-library/user-event": "npm:^14.5.2"
     "@types/babel__preset-env": "npm:^7"
+    "@types/crypto-js": "npm:^4"
     "@types/identity-obj-proxy": "npm:^3"
     "@types/jest": "npm:^29.5.10"
     "@types/minipass": "npm:^3.3.5"
@@ -10183,6 +10206,7 @@ __metadata:
     autoprefixer: "npm:^10.4.16"
     babel-jest: "npm:^29.7.0"
     clsx: "npm:^2.1.0"
+    crypto-js: "npm:^4.2.0"
     eslint: "npm:^8.27.0"
     eslint-config-airbnb: "npm:19.0.4"
     eslint-config-airbnb-typescript: "npm:17.0.0"
