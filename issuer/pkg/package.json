@@ -1,0 +1,14 @@
+{
+  "name": "atman-poc-core",
+  "version": "0.1.0",
+  "files": [
+    "atman_poc_core_bg.wasm",
+    "atman_poc_core.js",
+    "atman_poc_core.d.ts"
+  ],
+  "module": "atman_poc_core.js",
+  "types": "atman_poc_core.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
