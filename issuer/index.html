@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rust Wasm Text Processor</title>
+    <script type="module">
+        import init, { process_text } from './pkg/atman_poc_core.js';
+
+        async function runWasm() {
+            await init();
+            document.getElementById('processBtn').addEventListener('click', () => {
+                const inputText = document.getElementById('textInput').value;
+                const outputText = process_text(inputText);
+                document.getElementById('output').textContent = outputText;
+            });
+        }
+
+        runWasm();
+    </script>
+</head>
+<body>
+    <input id="textInput" type="text" placeholder="Enter text here">
+    <button id="processBtn">Process Text</button>
+    <p id="output"></p>
+</body>
+</html>
+
