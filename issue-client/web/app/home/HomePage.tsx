@@ -1,9 +1,8 @@
 'use client';
 import React, { useCallback } from 'react';
 
-import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
+// import * as Recrypt from "@ironcorelabs/recrypt-wasm-binding";
 import aes from 'crypto-js/aes';
-import Utf8 from 'crypto-js/enc-utf8';
 import WordArray from 'crypto-js/lib-typedarrays';
 import CBC from 'crypto-js/mode-ctr';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
@@ -40,12 +39,10 @@ export default function HomePage() {
     return paddedArray;
   }
 
-  const processText = useCallback(() => {
-    const aesKey = WordArray.random(128 / 8);
-    const ciphertextWithIv = aesEncrpyt(text, aesKey);
-
+  const pre = async (data: Uint8Array) => {
+    const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
     // Create a new Recrypt API instance
-    const Api256 = new Recrypt.Api256();
+    const Api256 = new recrypt.Api256();
 
     // Generate both a user key pair and a signing key pair
     // TODO: should be provided from somewhere else
@@ -53,24 +50,35 @@ export default function HomePage() {
     const signingKeys = Api256.generateEd25519KeyPair();
 
     // Encrypt the AES key
-    const paddedAESkey = addZeroPadding(new TextEncoder().encode(aesKey.toString()), 384);
+    const paddedAESkey = addZeroPadding(data, 384);
     const encryptedAESKey = Api256.encrypt(paddedAESkey, bnKeyPair.publicKey, signingKeys.privateKey);
 
     // TODO: should be provided from somewhere else
     const verifierBNKeyPair = Api256.generateKeyPair();
     const reencryptionKey = Api256.generateTransformKey(bnKeyPair.privateKey, verifierBNKeyPair.publicKey, signingKeys.privateKey);
 
-    const outputData = {
-      data: ciphertextWithIv,
-      encryptedAESKey: encryptedAESKey,
+    return {
+      encrypted: encryptedAESKey,
       reencryptionKey: reencryptionKey,
     };
+  };
+
+  const processText = useCallback(async () => {
+    const aesKey = WordArray.random(128 / 8);
+    const ciphertextWithIv = aesEncrpyt(text, aesKey);
+
+    const preResult = await pre(new TextEncoder().encode(aesKey.toString()));
+
+    const outputData = {
+      data: ciphertextWithIv,
+      encryptedAESKey: preResult.encrypted,
+      reencryptionKey: preResult.reencryptionKey,
+    };
+
 
     // Process the text and set the output
     setOutput(JSON.stringify(outputData));
   }, [text]);
-
-
 
   return (
     <>
