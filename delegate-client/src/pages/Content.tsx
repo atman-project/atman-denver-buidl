@@ -15,6 +15,7 @@ const Content = ({ cid }) => {
   const permissionContract = useAtmanIssueContract();
 
   function checkVerifierPermission(account: string, permissions: any[][]): number {
+    console.log(permissions);
     for (let i = 0; i < permissions.length; i++) {
       const permission = permissions[i];
       if (permission[0].toUpperCase() === account.toUpperCase() && permission[1] == Permission.VERIFIER) {

@@ -5,6 +5,7 @@ import { useAtmanIssueContract, useIdentityStorageContract } from "./hooks/useCo
 import React from "react";
 import DelegateVerifierRow, { Permission, Role } from "./components/DelegateVerifierEntry";
 import styles from "./Issue.module.css";
+import { Contract } from "ethers";
 
 export function Issue() {
   const [text, setText] = useState("");
@@ -35,7 +36,7 @@ export function Issue() {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
   };
 
-  async function formatData(content: string, account: string, rows: Permission[]) {
+  async function encryptAndUploadContent(content: string, account: string, rows: Permission[]) {
     // @ts-ignore
     const { ethereum } = window;
     const signature = await ethereum.request({ method: 'personal_sign', params: [content, account] });
@@ -63,41 +64,62 @@ export function Issue() {
     const cid = await uploadToIPFS(
       JSON.stringify(encodeObject(dataToBeUploaded))
     );
-    setCid(cid);
 
-    const permissions = rows.map((row) => {
+    return {
+      cid: cid,
+      encodedBNKeyPair: encodedBNKeyPair,
+    };
+  }
+
+  function convertPermissions(rows: Permission[]) {
+    return rows.map((row) => {
       return {
         id: row.address,
         permission: row.role === 'delegate' ? 0 : 1,
         expiredAt: row.timestamp,
       };
     });
+  }
 
-    return {
-      cid: cid,
-      encodedBNKeyPair: encodedBNKeyPair,
-      data: dataToBeUploaded,
-      permissions: permissions
-    };
+  async function execSetDataEntry(cid: string, account: string, rows: Permission[], atmanIssueContract: Contract): Promise<string> {
+    const permissions = convertPermissions(rows);
+    const { hash } = await atmanIssueContract.functions.setDataEntry(
+      cid,
+      'IPFS',
+      account,
+      permissions
+    );
+    console.log(`hash:${hash}`);
+    return `https://sepolia.etherscan.io/tx/${hash}`;
+  }
+
+  async function execUpdatePermissions(cid: string, rows: Permission[], atmanIssueContract: Contract): Promise<string> {
+    const permissions = convertPermissions(rows);
+    const { hash } = await atmanIssueContract.functions.updatePermissions(
+      cid,
+      permissions
+    );
+    console.log(`hash:${hash}`);
+    return `https://sepolia.etherscan.io/tx/${hash}`;
   }
 
   const issueContent = useCallback(async () => {
-    const { cid, encodedBNKeyPair, permissions } = await formatData(text, account!, rows);
+    const { cid, encodedBNKeyPair } = await encryptAndUploadContent(text, account!, rows);
+    setCid(cid);
 
     const identityResult = await identityContract!.functions.setIdentity(encodedBNKeyPair.publicKey, "0xab");
     console.log(`IDENTITY: https://sepolia.etherscan.io/tx/${identityResult.hash}`);
 
-    const { hash } = await atmanIssueContract!.functions.setDataEntry(
-      cid,
-      'IPFS',
-      account!,
-      permissions
-    );
-
-    const ethscanUrl = `https://sepolia.etherscan.io/tx/${hash}`;
+    const ethscanUrl = await execSetDataEntry(cid, account!, rows, atmanIssueContract!);
     setOutput(ethscanUrl);
-
   }, [text, account, atmanIssueContract, identityContract, rows]);
+
+  const updatePermissions = useCallback(async () => {
+    console.log(`cid:${cid}, account:${account}`);
+    console.log(rows);
+    const ethscanUrl = await execUpdatePermissions(cid, rows, atmanIssueContract!);
+    setOutput(ethscanUrl);
+  }, [cid, atmanIssueContract, rows]);
 
   return (
     <div>
@@ -153,6 +175,13 @@ export function Issue() {
           onClick={issueContent}
         >
           Issue
+        </button>
+        <button
+          className={styles.buttonPrimary}
+          type="button"
+          onClick={updatePermissions}
+        >
+          Update Permissions
         </button>
       </div>
       <p id="output">{output}</p>
