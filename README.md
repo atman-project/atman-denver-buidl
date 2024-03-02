@@ -2,6 +2,18 @@
 
 **Disclaimer**: This PoC doesn't implement the optimal full spec and architecture.
 
+- [Atman PoC](#atman-poc)
+   * [Introductions](#introductions)
+   * [PoC Components ](#poc-components)
+   * [User Flow / Internal Details](#user-flow-internal-details)
+      + [Issuer client](#issuer-client)
+      + [Web service](#web-service)
+   * [Design Rationales](#design-rationales)
+      + [Content permissions stored on chain](#content-permissions-stored-on-chain)
+      + [IPFS as a content channel](#ipfs-as-a-content-channel)
+      + [Web3 wallet as a key manager](#web3-wallet-as-a-key-manager)
+      + [Proxy re-encryption](#proxy-re-encryption)
+
 ## Introductions
 
  The Atman Project is a decentralized protocol enhancing web trust and privacy by certifying digital content's provenance, authenticity, and lifecycle. It empowers content creators and consumers, allowing data issuers to control their data lifecycle, specify permissions, and ensure interoperability. The protocol addresses misinformation and centralized control, making compliance with regulations like GDPR intrinsic to the web's infrastructure.
