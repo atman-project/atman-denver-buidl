@@ -1,11 +1,14 @@
 import { useCallback, useState } from "react";
-import { aesEncrpyt, pre, uploadToIPFS, encodeObject } from "../Encryption";
-import { useWeb3Context } from "@/hooks/useWeb3Context";
+import { aesEncrpyt, pre, uploadToIPFS, encodeObject } from "./Encryption";
+import { useWeb3Context } from "./hooks/useWeb3Context";
+import { useAtmanIssueContract } from "./hooks/useContract";
+import React from "react";
 
 export function Issue() {
   const [text, setText] = useState("");
   const [output, setOutput] = useState("");
-  const { connectWallet } = useWeb3Context();
+  const { connectWallet, account } = useWeb3Context();
+  const contract = useAtmanIssueContract();
 
   const processText = useCallback(async () => {
     const aesKey = "mykey";
@@ -26,12 +29,22 @@ export function Issue() {
       cid: cid,
       data: dataToBeUploaded,
     };
-    setOutput(JSON.stringify(outputData));
-  }, [text]);
+    console.log(`Output: ${JSON.stringify(outputData)}`);
+
+    const { hash } = await contract!.functions.setDataEntry(
+      cid,
+      'IPFS',
+      account!,
+      []
+    );
+
+    const ethscanUrl = `https://sepolia.etherscan.io/tx/${hash}`;
+    setOutput(ethscanUrl);
+
+  }, [text, account, contract]);
 
   return (
-    <>
-      <button type="button" onClick={connectWallet}>Connect Wallet</button>
+    <div>
       <h2>Issue data</h2>
       <input
         id="textInput"
@@ -44,6 +57,6 @@ export function Issue() {
         Issue
       </button>
       <p id="output">{output}</p>
-    </>
+    </div>
   );
 }
