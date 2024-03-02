@@ -140,10 +140,14 @@ export function encodeBNKeyPair(keypair) {
 export function decodeBNKeyPair(privateKey: string, publicKey: string) {
   return {
     privateKey: base64ToUint8Array(privateKey),
-    publicKey: {
-      x: base64ToUint8Array(publicKey.substring(0, 44)),
-      y: base64ToUint8Array(publicKey.substring(44)),
-    }
+    publicKey: decodeBNPublicKey(publicKey),
+  };
+}
+
+export function decodeBNPublicKey(publicKey: string) {
+  return {
+    x: base64ToUint8Array(publicKey.substring(0, 44)),
+    y: base64ToUint8Array(publicKey.substring(44)),
   };
 }
 
