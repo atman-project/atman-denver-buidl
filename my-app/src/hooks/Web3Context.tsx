@@ -21,6 +21,7 @@ export function Web3ContextProvider({ children }) {
   const [contractMetadata, setContractMetadata] = useState({});
 
   async function checkIfWalletIsConnected() {
+    // @ts-ignore
     const { ethereum } = window;
     if (!ethereum) return;
 
@@ -54,6 +55,7 @@ export function Web3ContextProvider({ children }) {
       contractMetadata,
       setContractMetadata,
       connectWallet: async () => {
+        // @ts-ignore
         const { ethereum } = window;
 
         // request account
@@ -66,6 +68,7 @@ export function Web3ContextProvider({ children }) {
   );
 
   return (
+    // @ts-ignore
     <Web3Context.Provider value={contextValue}>{children}</Web3Context.Provider>
   );
 }

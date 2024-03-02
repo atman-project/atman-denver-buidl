@@ -36,6 +36,7 @@ export function Issue() {
   };
 
   async function formatData(content: string, account: string, rows: Permission[]) {
+    // @ts-ignore
     const { ethereum } = window;
     const signature = await ethereum.request({method: 'personal_sign', params: [content, account]});
     setSignature(signature);

@@ -1,9 +1,10 @@
+import { EncryptedValue, TransformKey } from '@ironcorelabs/recrypt-wasm-binding';
 import aes from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import WordArray from 'crypto-js/lib-typedarrays';
 import CBC from 'crypto-js/mode-ctr';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
-import * as ipfsClient from 'ipfs-http-client';
+import { create as ipfsCreate } from 'ipfs-http-client';
 
 export const IV_SIZE = 16;
 export const AES_KEY_SIZE = 16;
@@ -178,7 +179,7 @@ export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey
 };
 
 export const uploadToIPFS = async (data: string): Promise<string> => {
-  const ipfs = ipfsClient.create({ url: 'http://localhost:5001' });
+  const ipfs = ipfsCreate({ url: 'http://localhost:5001' });
 
   // Test the connection
   const version = await ipfs.version();
@@ -191,7 +192,7 @@ export const uploadToIPFS = async (data: string): Promise<string> => {
 }
 
 export const fetchIPFSData = async (cid: string) => {
-  const ipfs = ipfsClient.create({ url: 'http://localhost:5001' });
+  const ipfs = ipfsCreate({ url: 'http://localhost:5001' });
 
   // Test the connection
   const version = await ipfs.version();
