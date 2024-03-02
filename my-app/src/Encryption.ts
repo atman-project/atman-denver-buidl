@@ -123,16 +123,18 @@ export const removeZeroPadding = (data: Uint8Array, targetLen: number): Uint8Arr
   return data.subarray(0, targetLen);
 }
 
+export async function generateBNKeyPair() {
+  const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
+  // Create a new Recrypt API instance
+  const Api256 = new recrypt.Api256();
+  return Api256.generateKeyPair();
+}
 
-
-export const pre = async (data: Uint8Array) => {
+export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey) => {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
   const Api256 = new recrypt.Api256();
 
-  // Generate both a user key pair and a signing key pair
-  // TODO: should be provided from somewhere else
-  const bnKeyPair = Api256.generateKeyPair();
   // console.log(`bn_sk: ${uint8ArrayToBase64(bnKeyPair.privateKey)}`);
   // console.log(`bn_pk_x: ${uint8ArrayToBase64(bnKeyPair.publicKey.x)}`);
   // console.log(`bn_pk_y: ${uint8ArrayToBase64(bnKeyPair.publicKey.y)}`);
@@ -140,20 +142,17 @@ export const pre = async (data: Uint8Array) => {
 
   // Encrypt the AES key
   const paddedAESkey = addZeroPadding(data, 384);
-  const encryptedAESKey = Api256.encrypt(paddedAESkey, bnKeyPair.publicKey, signingKeys.privateKey);
+  const encryptedAESKey = Api256.encrypt(paddedAESkey, senderBNKeyPair.publicKey, signingKeys.privateKey);
 
-  // TODO: should be provided from somewhere else
-  const verifierBNKeyPair = Api256.generateKeyPair();
   // console.log(`bn_v_sk: ${uint8ArrayToBase64(verifierBNKeyPair.privateKey)}`);
   // console.log(`bn_v_pk_x: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.x)}`);
   // console.log(`bn_v_pk_y: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.y)}`);
-  const reencryptionKey = Api256.generateTransformKey(bnKeyPair.privateKey, verifierBNKeyPair.publicKey, signingKeys.privateKey);
+  const reencryptionKey = Api256.generateTransformKey(senderBNKeyPair.privateKey, receiverBNPublicKey, signingKeys.privateKey);
 
   return {
     encrypted: encryptedAESKey,
     reencryptionKey: reencryptionKey,
     signingPrivateKey: signingKeys.privateKey,
-    verifierBNPrivateKey: verifierBNKeyPair.privateKey, //TODO: remove this
   };
 };
 
