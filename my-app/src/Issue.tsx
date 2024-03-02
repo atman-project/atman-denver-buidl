@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey, generateBNKeyPair, encodeBNKeyPair } from "./Encryption";
 import { useWeb3Context } from "./hooks/useWeb3Context";
-import { useAtmanIssueContract } from "./hooks/useContract";
+import { useAtmanIssueContract, useIdentityStorageContract } from "./hooks/useContract";
 import React from "react";
 import DelegateVerifierRow from "./components/DelegateVerifierEntry";
 import styles from "./Issue.module.css";
@@ -19,7 +19,8 @@ export function Issue() {
   const [text, setText] = useState("");
   const [output, setOutput] = useState("");
   const { account } = useWeb3Context();
-  const contract = useAtmanIssueContract();
+  const atmanIssueContract = useAtmanIssueContract();
+  const identityContract = useIdentityStorageContract();
   const [rows, setRows] = useState<Permission[]>([
     { id: 0, text: '', role: 'verifier', timestamp: Date.now() }
   ]);
@@ -56,17 +57,21 @@ export function Issue() {
 
     const outputData = {
       cid: cid,
+      encodedBNKeyPair: encodedBNKeyPair,
       data: dataToBeUploaded,
     };
     console.log(`Output: ${JSON.stringify(outputData)}`);
 
     return outputData;
   }
-  
-  const issueContent = useCallback(async () => {
-    const { cid } = await formatData(text, account!, rows);
 
-    const { hash } = await contract!.functions.setDataEntry(
+  const issueContent = useCallback(async () => {
+    const { cid, encodedBNKeyPair } = await formatData(text, account!, rows);
+
+    const identityResult = await identityContract!.functions.setIdentity(encodedBNKeyPair.publicKey, "0xab");
+    console.log(`IDENTITY: https://sepolia.etherscan.io/tx/${identityResult.hash}`);
+
+    const { hash } = await atmanIssueContract!.functions.setDataEntry(
       cid,
       'IPFS',
       account!,
@@ -76,7 +81,7 @@ export function Issue() {
     const ethscanUrl = `https://sepolia.etherscan.io/tx/${hash}`;
     setOutput(ethscanUrl);
 
-  }, [text, account, contract, rows]);
+  }, [text, account, atmanIssueContract, identityContract, rows]);
 
   return (
     <div>
@@ -95,16 +100,16 @@ export function Issue() {
         ))}
       </div>
       <div className={styles.buttonContainer}>
-        <button 
+        <button
           className={styles.buttonPrimary} // add this class
-          type="button" 
+          type="button"
           onClick={addRow}
         >
           Add Row
         </button>
-        <button 
+        <button
           className={styles.buttonPrimary} // add this class
-          type="button" 
+          type="button"
           onClick={issueContent}
         >
           Issue
