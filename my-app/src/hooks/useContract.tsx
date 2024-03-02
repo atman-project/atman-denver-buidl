@@ -28,3 +28,14 @@ export const useAtmanIssueContract = () => {
     signingEnabled: true,
   });
 }
+
+export const useIdentityStorageContract = () => {
+  const contractAddress = '0x49AE43593fD005a6998F92b89cAcaF7055b23f47';
+  const contractABI = `[{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":false,"internalType":"string","name":"publicKeyBase64","type":"string"}],"name":"IdentitySet","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"getIdentity","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"publicKeyBase64","type":"string"},{"internalType":"bytes","name":"signature","type":"bytes"}],"name":"setIdentity","outputs":[],"stateMutability":"nonpayable","type":"function"}]`;
+
+  return useContract({
+    address: contractAddress,
+    ABI: contractABI,
+    signingEnabled: true,
+  });
+}

@@ -6,6 +6,7 @@ contract IdentityStorage {
     struct Identity {
         address owner;
         string publicKeyBase64;
+        bytes signature;
     }
 
     // Mapping from user's Ethereum address to their Identity
@@ -17,7 +18,7 @@ contract IdentityStorage {
     // Function to add or update an identity with signature verification
     function setIdentity(string memory publicKeyBase64, bytes memory signature) public {
         // Create a new Identity struct and add it to the mapping
-        identities[msg.sender] = Identity(msg.sender, publicKeyBase64);
+        identities[msg.sender] = Identity(msg.sender, publicKeyBase64, signature);
 
         // Emit an event for the new identity
         emit IdentitySet(msg.sender, publicKeyBase64);
