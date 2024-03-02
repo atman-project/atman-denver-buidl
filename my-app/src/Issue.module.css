@@ -1,0 +1,47 @@
+/* YourComponentStyles.module.css */
+
+.inputField {
+  margin-bottom: 1rem;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.rowsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.buttonPrimary {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.buttonPrimary:hover {
+  background-color: #0056b3;
+}
+
+/* You might not need this style if you do not have a specific styling for removeButton in DelegateVerifierRow */
+.removeButton {
+  padding: 0.3rem 0.6rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}

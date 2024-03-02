@@ -11,9 +11,7 @@ export default function Home() {
     <Web3ContextProvider>
       <main className={styles.main}>
         <Header />
-        {/* <p className={styles.center}> */}
         <Issue />
-        {/* </p> */}
       </main>
     </Web3ContextProvider>
   );
