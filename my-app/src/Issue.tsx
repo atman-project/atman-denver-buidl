@@ -8,7 +8,7 @@ import styles from "./Issue.module.css";
 
 type Role = 'verifier' | 'delegate';
 
-interface RowItem {
+interface Permission {
   id: number;
   text: string;
   role: Role;
@@ -20,7 +20,7 @@ export function Issue() {
   const [output, setOutput] = useState("");
   const { account } = useWeb3Context();
   const contract = useAtmanIssueContract();
-  const [rows, setRows] = useState<RowItem[]>([
+  const [rows, setRows] = useState<Permission[]>([
     { id: 0, text: '', role: 'verifier', timestamp: Date.now() }
   ]);
 
@@ -35,9 +35,9 @@ export function Issue() {
     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
   };
 
-  const processText = useCallback(async () => {
+  async function formatData(data: string, account: string, rows: Permission[]) {
     const aesKey = generateAESKey();
-    const ciphertextWithIv = aesEncrpyt(text, aesKey);
+    const ciphertextWithIv = aesEncrpyt(data, aesKey);
 
     const bnKeyPair = await generateBNKeyPair();
     const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
@@ -60,6 +60,12 @@ export function Issue() {
     };
     console.log(`Output: ${JSON.stringify(outputData)}`);
 
+    return outputData;
+  }
+  
+  const issueContent = useCallback(async () => {
+    const { cid } = await formatData(text, account!, rows);
+
     const { hash } = await contract!.functions.setDataEntry(
       cid,
       'IPFS',
@@ -70,7 +76,7 @@ export function Issue() {
     const ethscanUrl = `https://sepolia.etherscan.io/tx/${hash}`;
     setOutput(ethscanUrl);
 
-  }, [text, account, contract]);
+  }, [text, account, contract, rows]);
 
   return (
     <div>
@@ -99,7 +105,7 @@ export function Issue() {
         <button 
           className={styles.buttonPrimary} // add this class
           type="button" 
-          onClick={processText}
+          onClick={issueContent}
         >
           Issue
         </button>
