@@ -1,4 +1,7 @@
-```
+#!/bin/bash
+
+set -euxo pipefail
+
 mkdir -p ipfs-datadir/staging
 mkdir -p ipfs-datadir/data
 
@@ -11,8 +14,12 @@ docker exec ipfs_host ipfs config --json API.HTTPHeaders.Access-Control-Allow-Me
 
 docker restart ipfs_host
 docker logs -f ipfs_host
-```
 
-Then, open http://localhost:5001/webui
-
-
+os_name=$(uname)
+if [[ "$os_name" == "Darwin" ]]; then
+  open http://localhost:5001/webui
+elif [[ "$os_name" == "Linux" ]]; then
+  xdg-open http://localhost:5001/webui
+else
+    echo "Unknown OS: $os_name"
+fi
