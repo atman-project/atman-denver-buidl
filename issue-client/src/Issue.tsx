@@ -26,7 +26,7 @@ export function Issue() {
   };
 
   const handleRowChange = (id: number, field: keyof Permission, value: string | number) => {
-    setRows(prevRows => prevRows.map(row => 
+    setRows(prevRows => prevRows.map(row =>
       row.id === id ? { ...row, [field]: value } : row
     ));
   };
@@ -38,7 +38,7 @@ export function Issue() {
   async function formatData(content: string, account: string, rows: Permission[]) {
     // @ts-ignore
     const { ethereum } = window;
-    const signature = await ethereum.request({method: 'personal_sign', params: [content, account]});
+    const signature = await ethereum.request({ method: 'personal_sign', params: [content, account] });
     setSignature(signature);
 
     const data = JSON.stringify({ content, signature }) as string;
@@ -48,10 +48,12 @@ export function Issue() {
 
     const bnKeyPair = await generateBNKeyPair();
     const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
-    console.log(`sk: ${JSON.stringify(encodedBNKeyPair)}`);
 
-    const receiverBNKeyPair = await generateBNKeyPair();
-    const preResult = await pre(aesKey, bnKeyPair, receiverBNKeyPair.publicKey);
+    const receiverPublicKeys = await Promise.all(rows.map(async (_) => {
+      const receiverBNKeyPair = await generateBNKeyPair();
+      return receiverBNKeyPair.publicKey;
+    }));
+    const preResult = await pre(aesKey, bnKeyPair, receiverPublicKeys);
 
     const dataToBeUploaded = {
       data: ciphertextWithIv,
@@ -125,7 +127,7 @@ export function Issue() {
       />
       <div className={styles.rowsContainer}>
         {rows.map((row) => (
-          <DelegateVerifierRow 
+          <DelegateVerifierRow
             key={row.id}
             id={row.id}
             address={row.address}
@@ -137,16 +139,16 @@ export function Issue() {
         ))}
       </div>
       <div className={styles.buttonContainer}>
-        <button 
+        <button
           className={styles.buttonPrimary}
-          type="button" 
+          type="button"
           onClick={addRow}
         >
           Add Row
         </button>
-        <button 
+        <button
           className={styles.buttonPrimary}
-          type="button" 
+          type="button"
           onClick={issueContent}
         >
           Issue

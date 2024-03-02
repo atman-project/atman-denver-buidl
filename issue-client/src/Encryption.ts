@@ -6,8 +6,8 @@ import CBC from 'crypto-js/mode-ctr';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
 import { create as ipfsCreate } from 'ipfs-http-client';
 
-export const IV_SIZE = 16;
-export const AES_KEY_SIZE = 16;
+const IV_SIZE = 16;
+const AES_KEY_SIZE = 32;
 
 function wordArrayToUint8Array(wa: WordArray): Uint8Array {
   const len = wa.sigBytes;
@@ -152,28 +152,24 @@ export function decodeBNPublicKey(publicKey: string) {
   };
 }
 
-export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey) => {
+export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKeys) => {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
   const Api256 = new recrypt.Api256();
 
-  // console.log(`bn_sk: ${uint8ArrayToBase64(bnKeyPair.privateKey)}`);
-  // console.log(`bn_pk_x: ${uint8ArrayToBase64(bnKeyPair.publicKey.x)}`);
-  // console.log(`bn_pk_y: ${uint8ArrayToBase64(bnKeyPair.publicKey.y)}`);
   const signingKeys = Api256.generateEd25519KeyPair();
 
   // Encrypt the AES key
   const paddedAESkey = addZeroPadding(data, 384);
   const encryptedAESKey = Api256.encrypt(paddedAESkey, senderBNKeyPair.publicKey, signingKeys.privateKey);
 
-  // console.log(`bn_v_sk: ${uint8ArrayToBase64(verifierBNKeyPair.privateKey)}`);
-  // console.log(`bn_v_pk_x: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.x)}`);
-  // console.log(`bn_v_pk_y: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.y)}`);
-  const reencryptionKey = Api256.generateTransformKey(senderBNKeyPair.privateKey, receiverBNPublicKey, signingKeys.privateKey);
+  const reencryptionKeys = receiverBNPublicKeys.map((receiverBNPublicKey) => {
+    return Api256.generateTransformKey(senderBNKeyPair.privateKey, receiverBNPublicKey, signingKeys.privateKey);
+  });
 
   return {
     encrypted: encryptedAESKey,
-    reencryptionKey: reencryptionKey,
+    reencryptionKeys: reencryptionKeys,
     signingPrivateKey: signingKeys.privateKey,
   };
 };
