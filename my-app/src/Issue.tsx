@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey, generateBNKeyPair } from "./Encryption";
+import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey, generateBNKeyPair, encodeBNKeyPair } from "./Encryption";
 import { useWeb3Context } from "./hooks/useWeb3Context";
 import { useAtmanIssueContract } from "./hooks/useContract";
 import React from "react";
@@ -40,6 +40,9 @@ export function Issue() {
     const ciphertextWithIv = aesEncrpyt(text, aesKey);
 
     const bnKeyPair = await generateBNKeyPair();
+    const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
+    console.log(`sk: ${JSON.stringify(encodedBNKeyPair)}`);
+
     const receiverBNKeyPair = await generateBNKeyPair();
     const preResult = await pre(aesKey, bnKeyPair, receiverBNKeyPair.publicKey);
 

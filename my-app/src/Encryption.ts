@@ -130,6 +130,23 @@ export async function generateBNKeyPair() {
   return Api256.generateKeyPair();
 }
 
+export function encodeBNKeyPair(keypair) {
+  return {
+    privateKey: uint8ArrayToBase64(keypair.privateKey),
+    publicKey: uint8ArrayToBase64(keypair.publicKey.x) + uint8ArrayToBase64(keypair.publicKey.y),
+  };
+}
+
+export function decodeBNKeyPair(privateKey: string, publicKey: string) {
+  return {
+    privateKey: base64ToUint8Array(privateKey),
+    publicKey: {
+      x: base64ToUint8Array(publicKey.substring(0, 44)),
+      y: base64ToUint8Array(publicKey.substring(44)),
+    }
+  };
+}
+
 export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey) => {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
