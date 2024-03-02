@@ -5,6 +5,45 @@ import CBC from 'crypto-js/mode-ctr';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
 import * as ipfsClient from 'ipfs-http-client';
 
+export const IV_SIZE = 16;
+export const AES_KEY_SIZE = 16;
+
+function wordArrayToUint8Array(wa: WordArray): Uint8Array {
+  const len = wa.sigBytes;
+  const words = wa.words;
+  const result = new Uint8Array(len);
+
+  let i = 0; // Index for the result array
+  let j = 0; // Index for the word array
+
+  while (true) {
+    // Convert each word (4 bytes) into Uint8Array values
+    result[i++] = (words[j] >> 24) & 0xff;
+    if (i === len) break;
+    result[i++] = (words[j] >> 16) & 0xff;
+    if (i === len) break;
+    result[i++] = (words[j] >> 8) & 0xff;
+    if (i === len) break;
+    result[i++] = words[j] & 0xff;
+    if (i === len) break;
+
+    j++;
+  }
+
+  return result;
+}
+
+function concatUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const result = new Uint8Array(a.length + b.length);
+  result.set(a, 0);
+  result.set(b, a.length);
+  return result;
+}
+
+export function generateAESKey(): Uint8Array {
+  return wordArrayToUint8Array(WordArray.random(AES_KEY_SIZE));
+}
+
 export const uint8ArrayToBase64 = (uint8Array) => {
   return btoa(String.fromCharCode.apply(null, uint8Array));
 }
@@ -43,17 +82,28 @@ export function decodeObject(obj) {
   return obj;
 }
 
-export const aesEncrpyt = (plaintext: string, key: string): string => {
-  const iv = "myiv";
-  const ciphertext = aes.encrypt(plaintext, key, {
+export const aesEncrpyt = (plaintext: string, key: Uint8Array): Uint8Array => {
+  const iv = WordArray.random(IV_SIZE);
+  const ciphertext = aes.encrypt(plaintext, WordArray.create(key), {
     mode: CBC,
     padding: Pkcs7,
-    iv: WordArray.create(new TextEncoder().encode(iv)),
+    iv: iv,
   }).toString();
-  return iv + ciphertext;
+
+  return concatUint8Array(wordArrayToUint8Array(iv), new TextEncoder().encode(ciphertext));
 }
 
-export const addZeroPadding = (data: string, targetLen: number): string => {
+export const aesDecrypt = (ciphertextWithIv: Uint8Array, key: Uint8Array): Uint8Array => {
+  const iv = WordArray.create(ciphertextWithIv.subarray(0, IV_SIZE));
+  const ciphertext = new TextDecoder().decode(ciphertextWithIv.subarray(IV_SIZE));
+  return aes.decrypt(ciphertext, WordArray.create(key), {
+    mode: CBC,
+    padding: Pkcs7,
+    iv: iv,
+  }).toString(Utf8);
+}
+
+export const addZeroPadding = (data: Uint8Array, targetLen: number): Uint8Array => {
   if (data.length > targetLen) {
     throw new Error(`data is too big: ${data.length}`);
   }
@@ -61,10 +111,21 @@ export const addZeroPadding = (data: string, targetLen: number): string => {
     return data;
   }
 
-  return data + '0'.repeat(targetLen - data.length);
+  const paddedArray = new Uint8Array(targetLen);
+  paddedArray.set(data, 0);
+  return paddedArray;
 }
 
-export const pre = async (data: string) => {
+export const removeZeroPadding = (data: Uint8Array, targetLen: number): Uint8Array => {
+  if (data.length < targetLen) {
+    throw new Error(`data is too short: ${data.length}`);
+  }
+  return data.subarray(0, targetLen);
+}
+
+
+
+export const pre = async (data: Uint8Array) => {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
   const Api256 = new recrypt.Api256();
@@ -72,14 +133,20 @@ export const pre = async (data: string) => {
   // Generate both a user key pair and a signing key pair
   // TODO: should be provided from somewhere else
   const bnKeyPair = Api256.generateKeyPair();
+  // console.log(`bn_sk: ${uint8ArrayToBase64(bnKeyPair.privateKey)}`);
+  // console.log(`bn_pk_x: ${uint8ArrayToBase64(bnKeyPair.publicKey.x)}`);
+  // console.log(`bn_pk_y: ${uint8ArrayToBase64(bnKeyPair.publicKey.y)}`);
   const signingKeys = Api256.generateEd25519KeyPair();
 
   // Encrypt the AES key
-  const paddedAESkey = new TextEncoder().encode(addZeroPadding(data, 384));
+  const paddedAESkey = addZeroPadding(data, 384);
   const encryptedAESKey = Api256.encrypt(paddedAESkey, bnKeyPair.publicKey, signingKeys.privateKey);
 
   // TODO: should be provided from somewhere else
   const verifierBNKeyPair = Api256.generateKeyPair();
+  // console.log(`bn_v_sk: ${uint8ArrayToBase64(verifierBNKeyPair.privateKey)}`);
+  // console.log(`bn_v_pk_x: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.x)}`);
+  // console.log(`bn_v_pk_y: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.y)}`);
   const reencryptionKey = Api256.generateTransformKey(bnKeyPair.privateKey, verifierBNKeyPair.publicKey, signingKeys.privateKey);
 
   return {
@@ -101,23 +168,6 @@ export const uploadToIPFS = async (data: string): Promise<string> => {
   const { cid } = await ipfs.add(data);
   console.log('Added file CID:', cid.toString());
   return cid.toString();
-}
-
-export const aesDecrypt = (ciphertextWithIv: string, key: string): string => {
-  const iv = ciphertextWithIv.substring(0, "myiv".length);
-  const ciphertext = ciphertextWithIv.substring("myiv".length);
-  return aes.decrypt(ciphertext, key, {
-    mode: CBC,
-    padding: Pkcs7,
-    iv: WordArray.create(new TextEncoder().encode(iv)),
-  }).toString(Utf8);
-}
-
-export const removeZeroPadding = (data: Uint8Array, targetLen: number): Uint8Array => {
-  if (data.length < targetLen) {
-    throw new Error(`data is too short: ${data.length}`);
-  }
-  return data.subarray(0, targetLen);
 }
 
 export const fetchIPFSData = async (cid: string) => {

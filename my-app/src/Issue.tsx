@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { aesEncrpyt, pre, uploadToIPFS, encodeObject } from "./Encryption";
+import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey } from "./Encryption";
 import { useWeb3Context } from "./hooks/useWeb3Context";
 import { useAtmanIssueContract } from "./hooks/useContract";
 import React from "react";
@@ -11,11 +11,10 @@ export function Issue() {
   const contract = useAtmanIssueContract();
 
   const processText = useCallback(async () => {
-    const aesKey = "mykey";
-    console.log(`AES: ${aesKey}`);
+    const aesKey = generateAESKey();
     const ciphertextWithIv = aesEncrpyt(text, aesKey);
 
-    const preResult = await pre(aesKey.toString());
+    const preResult = await pre(aesKey);
 
     const dataToBeUploaded = {
       data: ciphertextWithIv,
