@@ -151,7 +151,7 @@ export function decodeBNPublicKey(publicKey: string) {
   };
 }
 
-export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey) => {
+export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKeys) => {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
   const Api256 = new recrypt.Api256();
@@ -168,11 +168,13 @@ export const pre = async (data: Uint8Array, senderBNKeyPair, receiverBNPublicKey
   // console.log(`bn_v_sk: ${uint8ArrayToBase64(verifierBNKeyPair.privateKey)}`);
   // console.log(`bn_v_pk_x: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.x)}`);
   // console.log(`bn_v_pk_y: ${uint8ArrayToBase64(verifierBNKeyPair.publicKey.y)}`);
-  const reencryptionKey = Api256.generateTransformKey(senderBNKeyPair.privateKey, receiverBNPublicKey, signingKeys.privateKey);
+  const reencryptionKeys = receiverBNPublicKeys.map((receiverBNPublicKey) => {
+    return Api256.generateTransformKey(senderBNKeyPair.privateKey, receiverBNPublicKey, signingKeys.privateKey);
+  });
 
   return {
     encrypted: encryptedAESKey,
-    reencryptionKey: reencryptionKey,
+    reencryptionKeys: reencryptionKeys,
     signingPrivateKey: signingKeys.privateKey,
   };
 };
