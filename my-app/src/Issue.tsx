@@ -47,7 +47,6 @@ export function Issue() {
 
     const bnKeyPair = await generateBNKeyPair();
     const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
-    console.log(`sk: ${JSON.stringify(encodedBNKeyPair)}`);
 
     const receiverPublicKeys = await Promise.all(rows.map(async (_) => {
       const receiverBNKeyPair = await generateBNKeyPair();
