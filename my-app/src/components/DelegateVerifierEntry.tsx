@@ -1,29 +1,47 @@
 import React, { useState } from 'react';
 import styles from './DelegateVerifierEntry.module.css';
 
-function DelegateVerifierRow({ id, onRemove }) {
-  const [role, setRole] = useState('verifier');
-  const [text, setText] = useState('');
-  const [timestamp, setTimestamp] = useState('');
+export type Role = 'verifier' | 'delegate';
 
+export interface Permission {
+  id: number;
+  address: string;
+  role: Role;
+  timestamp: number;
+}
+
+interface DelegateVerifierRowProps {
+  id: number;
+  address: string;
+  role: Role;
+  timestamp: number;
+  onRemove: (id: number) => void;
+  onRowChange: (id: number, field: keyof Permission, value: string | number) => void;
+}
+
+function DelegateVerifierRow({ 
+  id,
+  address,
+  role,
+  timestamp,
+  onRemove,
+  onRowChange }: DelegateVerifierRowProps
+) {
+  
   const handleRoleChange = (event) => {
-    setRole(event.target.value);
+    onRowChange(id, 'role', event.target.value)
   };
 
-  const handleVerifierChange = (event) => {
-    setText(event.target.value);
-  };
-
-  const handleTimestampChange = (event) => {
-    setTimestamp(event.target.value);
+  const handleAddressChange = (event) => {
+    onRowChange(id, 'address', event.target.value)
   };
 
   return (
     <div className={styles.row}>
       <input
         type="text"
-        value={text}
-        onChange={handleVerifierChange}
+        value={address}
+        onChange={handleAddressChange}
         placeholder="Recipient address"
       />
       <div>
@@ -50,8 +68,8 @@ function DelegateVerifierRow({ id, onRemove }) {
       <input
         type="text"
         value={timestamp}
-        onChange={handleTimestampChange}
         placeholder="Enter timestamp"
+        readOnly={true}
       />
       <button type="button" className={styles.removeButton} onClick={() => onRemove(id)}>Remove</button>
     </div>

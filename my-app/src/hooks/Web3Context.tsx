@@ -36,7 +36,7 @@ export function Web3ContextProvider({ children }) {
       setIsActive(true);
     }
 
-    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: 11155111 }]});
+    await ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xaa36a7" }]});
   }
 
   useEffect(() => {
