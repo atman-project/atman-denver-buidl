@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useIdentityStorageContract } from "../hooks/useContract";
 import { encodeBNKeyPair, generateBNKeyPair, uint8ArrayToBase64 } from '../Encryption';
+import { useIdentityStorageContract } from '@/hooks/useContract';
 
 const Root = () => {
   const [cid, setCid] = useState('');
@@ -8,6 +8,11 @@ const Root = () => {
 
   useEffect(() => {
     async function generateAndRegisterIdentity() {
+      if (identityContract === null) {
+        console.log("identityContract is null");
+        return;
+      }
+
       const bnKeyPair = await generateBNKeyPair();
       const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
       const identityResult = await identityContract!.functions.setIdentity(encodedBNKeyPair.publicKey, "0xab");
