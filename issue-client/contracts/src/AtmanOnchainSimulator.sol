@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract AccessControl {
+contract AtmanOnchainSimulator {
     enum Permission { Delegatee, Verifier }
 
     struct PermissionEntry {
