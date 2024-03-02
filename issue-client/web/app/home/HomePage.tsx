@@ -6,6 +6,7 @@ import aes from 'crypto-js/aes';
 import WordArray from 'crypto-js/lib-typedarrays';
 import CBC from 'crypto-js/mode-ctr';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
+import * as ipfsClient from 'ipfs-http-client';
 import Header from '@/components/layout/header/Header';
 
 /**
@@ -63,20 +64,36 @@ export default function HomePage() {
     };
   };
 
+  const uploadToIPFS = async (data: Uint8Array): Promise<string> => {
+    const ipfs = ipfsClient.create({ url: 'http://localhost:5001' });
+
+    // Test the connection
+    const version = await ipfs.version();
+    console.log('Connected to IPFS node: version:', version.version);
+
+    // Example: Add a file to IPFS
+    const { cid } = await ipfs.add(data);
+    console.log('Added file CID:', cid.toString());
+    return cid.toString();
+  }
+
   const processText = useCallback(async () => {
     const aesKey = WordArray.random(128 / 8);
     const ciphertextWithIv = aesEncrpyt(text, aesKey);
 
     const preResult = await pre(new TextEncoder().encode(aesKey.toString()));
 
-    const outputData = {
+    const dataToBeUploaded = {
       data: ciphertextWithIv,
       encryptedAESKey: preResult.encrypted,
       reencryptionKey: preResult.reencryptionKey,
     };
+    const cid = await uploadToIPFS(new TextEncoder().encode(JSON.stringify(dataToBeUploaded)));
 
-
-    // Process the text and set the output
+    const outputData = {
+      cid: cid,
+      data: dataToBeUploaded,
+    }
     setOutput(JSON.stringify(outputData));
   }, [text]);
 
