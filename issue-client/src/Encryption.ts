@@ -7,7 +7,7 @@ import Pkcs7 from 'crypto-js/pad-pkcs7';
 import { create as ipfsCreate } from 'ipfs-http-client';
 
 const IV_SIZE = 16;
-const AES_KEY_SIZE = 32;
+export const AES_KEY_SIZE = 32;
 
 function wordArrayToUint8Array(wa: WordArray): Uint8Array {
   const len = wa.sigBytes;
@@ -94,7 +94,7 @@ export const aesEncrpyt = (plaintext: string, key: Uint8Array): Uint8Array => {
   return concatUint8Array(wordArrayToUint8Array(iv), new TextEncoder().encode(ciphertext));
 }
 
-export const aesDecrypt = (ciphertextWithIv: Uint8Array, key: Uint8Array): Uint8Array => {
+export const aesDecrypt = (ciphertextWithIv: Uint8Array, key: Uint8Array): string => {
   const iv = WordArray.create(ciphertextWithIv.subarray(0, IV_SIZE));
   const ciphertext = new TextDecoder().decode(ciphertextWithIv.subarray(IV_SIZE));
   return aes.decrypt(ciphertext, WordArray.create(key), {

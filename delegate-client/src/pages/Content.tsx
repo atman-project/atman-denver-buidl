@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
-import { fetchIPFSData, reencrypt, decrypt, removeZeroPadding, aesDecrypt } from '../Encryption';
+import { fetchIPFSData, reencrypt, decrypt, removeZeroPadding, aesDecrypt, AES_KEY_SIZE } from '../Encryption';
 
 const Content = ({ cid }) => {
   const [output, setOutput] = React.useState('');
@@ -7,7 +7,7 @@ const Content = ({ cid }) => {
   useEffect(() => {
     async function loadData() {
       let ipfsData = await fetchIPFSData(cid);
-      const encryptedDataWithIv: string = ipfsData.data;
+      const encryptedDataWithIv: Uint8Array = ipfsData.data;
       const {
         encrypted,
         reencryptionKey,
@@ -15,10 +15,9 @@ const Content = ({ cid }) => {
         verifierBNPrivateKey,
       } = ipfsData.pre;
 
-      // TODO: remove this part. only for testing
       let reencryptedAESKey = await reencrypt(encrypted, reencryptionKey, signingPrivateKey);
       let decryptedAESKeyPadded = await decrypt(reencryptedAESKey, verifierBNPrivateKey);
-      const decryptedAESKey = new TextDecoder().decode(removeZeroPadding(decryptedAESKeyPadded, "mykey".length));
+      const decryptedAESKey = removeZeroPadding(decryptedAESKeyPadded, AES_KEY_SIZE);
       const decryptedData = aesDecrypt(encryptedDataWithIv, decryptedAESKey);
 
       setOutput(decryptedData);
