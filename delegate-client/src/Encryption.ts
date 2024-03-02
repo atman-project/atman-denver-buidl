@@ -1,4 +1,4 @@
-import { EncryptedValue, TransformKey } from '@ironcorelabs/recrypt-wasm-binding';
+import { EncryptedValue, KeyPair, PublicKey, TransformKey } from '@ironcorelabs/recrypt-wasm-binding';
 import aes from 'crypto-js/aes';
 import Utf8 from 'crypto-js/enc-utf8';
 import WordArray from 'crypto-js/lib-typedarrays';
@@ -124,7 +124,7 @@ export const removeZeroPadding = (data: Uint8Array, targetLen: number): Uint8Arr
   return data.subarray(0, targetLen);
 }
 
-export async function generateBNKeyPair() {
+export async function generateBNKeyPair(): Promise<KeyPair> {
   const recrypt = await import("@ironcorelabs/recrypt-wasm-binding");
   // Create a new Recrypt API instance
   const Api256 = new recrypt.Api256();
@@ -138,14 +138,14 @@ export function encodeBNKeyPair(keypair) {
   };
 }
 
-export function decodeBNKeyPair(privateKey: string, publicKey: string) {
+export function decodeBNKeyPair(privateKey: string, publicKey: string): KeyPair {
   return {
     privateKey: base64ToUint8Array(privateKey),
     publicKey: decodeBNPublicKey(publicKey),
   };
 }
 
-export function decodeBNPublicKey(publicKey: string) {
+export function decodeBNPublicKey(publicKey: string): PublicKey {
   return {
     x: base64ToUint8Array(publicKey.substring(0, 44)),
     y: base64ToUint8Array(publicKey.substring(44)),

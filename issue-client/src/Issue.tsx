@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey, generateBNKeyPair, encodeBNKeyPair } from "./Encryption";
+import { aesEncrpyt, pre, uploadToIPFS, encodeObject, generateAESKey, generateBNKeyPair, encodeBNKeyPair, decodeBNPublicKey } from "./Encryption";
 import { useWeb3Context } from "./hooks/useWeb3Context";
 import { useAtmanIssueContract, useIdentityStorageContract } from "./hooks/useContract";
 import React from "react";
@@ -49,9 +49,10 @@ export function Issue() {
     const bnKeyPair = await generateBNKeyPair();
     const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
 
-    const receiverPublicKeys = await Promise.all(rows.map(async (_) => {
-      const receiverBNKeyPair = await generateBNKeyPair();
-      return receiverBNKeyPair.publicKey;
+    const receiverPublicKeys = await Promise.all(rows.filter((row) => row.role === "verifier").map(async (row) => {
+      const result = await identityContract!.functions.getIdentity(row.address);
+      const publicKeyBase64 = result[0];
+      return decodeBNPublicKey(publicKeyBase64);
     }));
     const preResult = await pre(aesKey, bnKeyPair, receiverPublicKeys);
 

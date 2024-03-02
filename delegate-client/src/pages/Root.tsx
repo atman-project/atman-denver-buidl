@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useIdentityStorageContract } from "../hooks/useContract";
+import { encodeBNKeyPair, generateBNKeyPair, uint8ArrayToBase64 } from '../Encryption';
 
 const Root = () => {
   const [cid, setCid] = useState('');
+  const identityContract = useIdentityStorageContract();
+
+  useEffect(() => {
+    async function generateAndRegisterIdentity() {
+      const bnKeyPair = await generateBNKeyPair();
+      const encodedBNKeyPair = encodeBNKeyPair(bnKeyPair);
+      const identityResult = await identityContract!.functions.setIdentity(encodedBNKeyPair.publicKey, "0xab");
+      console.log(`IDENTITY: https://sepolia.etherscan.io/tx/${identityResult.hash}`);
+
+      localStorage.setItem("sk", uint8ArrayToBase64(bnKeyPair.privateKey));
+    }
+
+    generateAndRegisterIdentity();
+  }, [identityContract]);
 
   const handleInputChange = (e) => {
     setCid(e.target.value);
